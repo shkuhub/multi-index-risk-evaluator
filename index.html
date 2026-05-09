@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QUANT-X 2026 Risk Dashboard</title>
+    <style>
+        :root {
+            --bg-color: #0a0a0c;
+            --card-bg: #16161a;
+            --text-main: #e0e0e6;
+            --text-dim: #94949e;
+            --accent: #007aff;
+            --extreme-greed: #ff3b30;
+            --greed: #ff9f0a;
+            --neutral: #8e8e93;
+            --fear: #30d158;
+            --extreme-fear: #00a651;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: 'Inter', -apple-system, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container { max-width: 1200px; margin: 0 auto; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--card-bg);
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+        }
+
+        .title-group h1 { margin: 0; font-size: 24px; letter-spacing: -1px; }
+        .title-group p { margin: 5px 0 0; color: var(--text-dim); font-size: 14px; }
+
+        /* Parser Section */
+        .parser-box {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            border: 1px solid #2c2c2e;
+        }
+
+        textarea {
+            width: 100%;
+            height: 100px;
+            background: #000;
+            color: #00ff41;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Courier New', monospace;
+            resize: none;
+            box-sizing: border-box;
+        }
+
+        .btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Dashboard Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #2c2c2e;
+        }
+
+        .indicator-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            padding: 15px;
+            background: #1c1c21;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .stat-label { font-size: 12px; color: var(--text-dim); margin-bottom: 5px; }
+        .stat-value { font-size: 18px; font-weight: bold; }
+
+        /* Risk Gauge */
+        .gauge-container {
+            text-align: center;
+            padding: 40px 0;
+        }
+
+        .gauge-visual {
+            width: 200px;
+            height: 100px;
+            background: #333;
+            border-radius: 100px 100px 0 0;
+            margin: 0 auto;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gauge-fill {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--accent);
+            transform-origin: center top;
+            transition: transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .verdict {
+            font-size: 24px;
+            font-weight: bold;
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 8px;
+        }
+
+        /* Stock Analyzer */
+        .analyzer-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        select, input {
+            background: #000;
+            color: white;
+            border: 1px solid #333;
+            padding: 8px;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <header>
+        <div class="title-group">
+            <h1>QUANT-X INTELLIGENCE</h1>
+            <p>2026.05.08 Market Risk Status</p>
+        </div>
+        <div id="market-status" style="color: var(--accent); font-weight: bold;">LIVE ANALYSIS</div>
+    </header>
+
+    <section class="parser-box">
+        <label style="font-size: 14px; margin-bottom: 10px; display: block;">클로드의 검색 결과를 여기에 복사해서 붙여넣으세요:</label>
+        <textarea id="dataInput" placeholder="예: 버핏 지수: 145%, KOSPI PBR: 0.85..."></textarea>
+        <button class="btn" onclick="parseData()">데이터 분석 및 적용</button>
+    </section>
+
+    <div class="grid">
+        <!-- Main Analysis -->
+        <div class="card">
+            <h3>시장 리스크 종합 진단</h3>
+            <div class="gauge-container">
+                <div class="gauge-visual">
+                    <div id="gaugeFill" class="gauge-fill"></div>
+                </div>
+                <div id="riskScore" style="font-size: 48px; font-weight: bold; margin-top: 10px;">--</div>
+                <div id="verdictText" class="verdict">데이터를 입력해주세요</div>
+            </div>
+
+            <div class="indicator-list" id="indicatorGrid">
+                <!-- Indicators will be injected here -->
+            </div>
+        </div>
+
+        <!-- Stock Analyzer -->
+        <div class="card">
+            <h3>개별 종목 정밀 진단</h3>
+            <div class="analyzer-input">
+                <select id="marketType">
+                    <option value="US">미국 (US)</option>
+                    <option value="KR">한국 (KR)</option>
+                </select>
+                <input type="text" id="ticker" placeholder="Ticker" style="width: 80px;">
+            </div>
+            <div id="stockResult" style="color: var(--text-dim); font-size: 14px;">
+                시장이 과열일 때는 종목 선정에 보수적이어야 합니다.
+            </div>
+            <hr style="border: 0; border-top: 1px solid #333; margin: 20px 0;">
+            <div id="intelligenceNote" style="font-style: italic; color: var(--greed);">
+                "Intelligence: 지표를 입력하면 비판적 분석이 생성됩니다."
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 초기 더미/기준 데이터
+    let marketData = {
+        buffett: 0, per: 0, fear: 50, pbr: 0, yield: 4.5
+    };
+
+    function parseData() {
+        const text = document.getElementById('dataInput').value;
+        
+        // 정규표현식으로 수치 추출 (퍼센트, 소수점 등)
+        const buffettMatch = text.match(/버핏\s*지수[:\s]*(\d+\.?\d*)/);
+        const perMatch = text.match(/선행\s*PER[:\s]*(\d+\.?\d*)/);
+        const fearMatch = text.match(/공포.*탐욕[:\s]*(\d+)/);
+        const pbrMatch = text.match(/KOSPI\s*PBR[:\s]*(\d+\.?\d*)/);
+        const yieldMatch = text.match(/국채\s*금리[:\s]*(\d+\.?\d*)/);
+
+        if(buffettMatch) marketData.buffett = parseFloat(buffettMatch[1]);
+        if(perMatch) marketData.per = parseFloat(perMatch[1]);
+        if(fearMatch) marketData.fear = parseFloat(fearMatch[1]);
+        if(pbrMatch) marketData.pbr = parseFloat(pbrMatch[1]);
+        if(yieldMatch) marketData.yield = parseFloat(yieldMatch[1]);
+
+        updateDashboard();
+    }
+
+    function updateDashboard() {
+        // 리스크 점수 계산 로직 (가중치 방식)
+        let score = 0;
+        if(marketData.buffett > 150) score += 30; else if(marketData.buffett > 120) score += 15;
+        if(marketData.per > 22) score += 20;
+        if(marketData.fear > 80) score += 20;
+        if(marketData.pbr > 1.1) score += 15; else if(marketData.pbr < 0.8) score -= 10;
+        
+        const finalScore = Math.min(Math.max(score + 30, 0), 100); // 기본값 30에서 조정
+        
+        // UI 업데이트
+        document.getElementById('riskScore').innerText = finalScore;
+        const fill = document.getElementById('gaugeFill');
+        fill.style.transform = `rotate(${finalScore * 1.8}deg)`;
+
+        // 5단계 판정
+        let verdict = "";
+        let color = "";
+        if(finalScore > 80) { verdict = "극도 과열 (Extreme Greed)"; color = "var(--extreme-greed)"; }
+        else if(finalScore > 60) { verdict = "과열 (Greed)"; color = "var(--greed)"; }
+        else if(finalScore > 40) { verdict = "중립 (Neutral)"; color = "var(--neutral)"; }
+        else if(finalScore > 20) { verdict = "침체 (Fear)"; color = "var(--fear)"; }
+        else { verdict = "극도 침체 (Extreme Fear)"; color = "var(--extreme-fear)"; }
+
+        const vText = document.getElementById('verdictText');
+        vText.innerText = verdict;
+        vText.style.color = color;
+
+        // 비판적 분석 생성
+        const intel = document.getElementById('intelligenceNote');
+        if(marketData.yield > 4.0 && marketData.per > 20) {
+            intel.innerText = `Critique: 현재 국채 금리가 ${marketData.yield}%인 고금리 상황에서 PER ${marketData.per}배는 매우 위험한 프리미엄입니다. 주식 매력도가 급감 중입니다.`;
+        } else {
+            intel.innerText = "Intelligence: 시장 지표 간의 역설적 흐름을 감시 중입니다.";
+        }
+
+        // 지표 그리드 생성
+        const grid = document.getElementById('indicatorGrid');
+        grid.innerHTML = `
+            <div class="stat-item"><div class="stat-label">버핏 지수</div><div class="stat-value">${marketData.buffett}%</div></div>
+            <div class="stat-item"><div class="stat-label">선행 PER</div><div class="stat-value">${marketData.per}x</div></div>
+            <div class="stat-item"><div class="stat-label">공포/탐욕</div><div class="stat-value">${marketData.fear}</div></div>
+            <div class="stat-item"><div class="stat-label">코스피 PBR</div><div class="stat-value">${marketData.pbr}x</div></div>
+        `;
+    }
+</script>
+
+</body>
+</html>
