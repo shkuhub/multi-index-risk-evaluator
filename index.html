@@ -27,6 +27,22 @@
             border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
+        /* 입력창 접힘 효과 */
+        #inputSection {
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 1000px;
+            overflow: hidden;
+            opacity: 1;
+        }
+        #inputSection.collapsed {
+            max-height: 0;
+            opacity: 0;
+            margin-bottom: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            pointer-events: none;
+        }
+
         .risk-extreme { background: rgba(127, 29, 29, 0.85); color: white; border: none; }
         .risk-high { background: rgba(240, 68, 82, 0.85); color: white; border: none; }
         .risk-neutral { background: rgba(75, 85, 99, 0.85); color: white; border: none; }
@@ -91,7 +107,8 @@
             <p class="text-slate-500 font-medium">데이터를 붙여넣으면 시장의 온도를 분석해드려요.</p>
         </header>
 
-        <section class="mb-20 glass-panel p-8 rounded-[32px] shadow-2xl">
+        <!-- 분석 결과 입력 섹션 (ID 추가됨) -->
+        <section id="inputSection" class="mb-20 glass-panel p-8 rounded-[32px] shadow-2xl">
             <div class="flex items-center mb-6 gap-3">
                 <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
                 <h2 class="text-xl font-bold">분석 결과 입력하기</h2>
@@ -102,17 +119,21 @@
             </button>
         </section>
 
-        <div class="flex items-center mb-8 gap-3">
+        <!-- 스크롤 타겟이 될 제목 영역 -->
+        <div id="summaryTitle" class="flex items-center mb-8 gap-3">
             <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
             <h2 class="text-2xl font-bold">핵심 요약</h2>
+            <!-- 입력창 다시 열기 버튼 (숨겨져 있다가 분석 후 나타남) -->
+            <button id="reopenBtn" onclick="toggleInput()" class="hidden ml-auto text-sm text-blue-600 font-bold hover:underline">데이터 다시 입력하기</button>
         </div>
+
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-20">
             <div class="glass-panel p-8 rounded-[32px] shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1.5 bg-blue-500 opacity-50"></div>
                 <h3 class="text-blue-600 font-bold text-sm mb-4 flex items-center gap-2">
                     <span class="w-2 h-2 rounded-full bg-blue-500"></span> US MARKET
                 </h3>
-                <div id="usIntel" class="text-slate-700 text-[15px] leading-8 whitespace-pre-wrap font-medium">데이터를 기다리고 있어요.</div>
+                <div id="usIntel" class="text-slate-700 text-[15px] leading-8 whitespace-pre-wrap font-medium">분석 대기 중이에요.</div>
             </div>
             <div class="glass-panel p-8 rounded-[32px] shadow-sm relative overflow-hidden">
                 <div class="absolute top-0 left-0 w-full h-1.5 bg-red-500 opacity-50"></div>
@@ -225,11 +246,8 @@
         }
 
         function createCard(m, idx, text) {
-            // 지표와 리스크단계는 기존의 클렌징 로직 유지 (괄호 기준으로 자르기)
             const valRegex = new RegExp(`${m.id}[^]*?지표:\\s*([^\\n/\\)]+)`, 'i');
             const riskRegex = new RegExp(`${m.id}[^]*?리스크단계:\\s*([^\\n/\\)]+)`, 'i');
-            
-            // 지표설명은 데이터 클렌징 제외, 단 문장 맨 끝의 ')'는 제거
             const descRegex = new RegExp(`${m.id}[^]*?지표설명:\\s*([^\\n]+)`, 'i');
 
             const valMatch = text.match(valRegex);
@@ -237,12 +255,8 @@
             const descMatch = text.match(descRegex);
 
             const value = valMatch ? valMatch[1].trim() : 'N/A';
-            
-            // 지표설명 처리: 문장 끝의 )만 제거
             let aiDesc = descMatch ? descMatch[1].trim() : '';
-            if (aiDesc.endsWith(')')) {
-                aiDesc = aiDesc.slice(0, -1).trim();
-            }
+            if (aiDesc.endsWith(')')) { aiDesc = aiDesc.slice(0, -1).trim(); }
 
             const staticInfo = metricDefinitions[m.name] || { desc: "정보 없음", criteria: "기준 미설정", judge: () => '미확인' };
 
@@ -251,13 +265,10 @@
                 risk = riskMatch[1].trim();
             } else {
                 const numValue = extractNumber(value);
-                if (numValue !== null) {
-                    risk = staticInfo.judge(numValue);
-                }
+                if (numValue !== null) { risk = staticInfo.judge(numValue); }
             }
 
             const riskClass = getRiskClass(risk);
-
             const card = document.createElement('div');
             card.className = `card animate-fadeIn`;
             card.style.animationDelay = `${idx * 0.05}s`;
@@ -272,25 +283,16 @@
                         </div>
                         <div class="text-sm font-semibold opacity-80 mb-1">${m.name}</div>
                         <div class="text-3xl font-bold mb-4 tracking-tight">${value}</div>
-                        
                         <div class="pt-4 border-t border-white/20 flex-1 overflow-y-auto custom-scroll">
-                            <div class="text-[13px] leading-relaxed opacity-90 font-medium">
-                                ${aiDesc}
-                            </div>
+                            <div class="text-[13px] leading-relaxed opacity-90 font-medium">${aiDesc}</div>
                         </div>
                     </div>
                     <div class="card-back shadow-xl border border-slate-700 flex flex-col h-full">
                         <div class="text-[11px] font-extrabold text-blue-400 mb-2 tracking-widest uppercase">DEFINITION</div>
-                        <div class="text-[13px] leading-snug font-medium text-slate-200 mb-5">
-                            ${staticInfo.desc}
-                        </div>
+                        <div class="text-[13px] leading-snug font-medium text-slate-200 mb-5">${staticInfo.desc}</div>
                         <div class="text-[11px] font-extrabold text-red-400 mb-2 tracking-widest uppercase">RISK CRITERIA</div>
-                        <div class="text-[12px] leading-relaxed text-slate-400 font-medium">
-                            ${staticInfo.criteria}
-                        </div>
-                        <div class="mt-auto pt-4 text-[9px] text-slate-600 font-bold text-center border-t border-slate-800">
-                            CLICK TO FLIP BACK
-                        </div>
+                        <div class="text-[12px] leading-relaxed text-slate-400 font-medium">${staticInfo.criteria}</div>
+                        <div class="mt-auto pt-4 text-[9px] text-slate-600 font-bold text-center border-t border-slate-800">CLICK TO FLIP BACK</div>
                     </div>
                 </div>
             `;
@@ -299,9 +301,11 @@
 
         function parseAllData() {
             const text = document.getElementById('inputText').value;
+            if (text.trim() === "") { alert("데이터를 입력해주세요."); return; }
+
+            // 데이터 분석 로직
             const usRegex = /\[미국 시장 종합 분석\]([\s\S]*?)(?=\[한국 시장 종합 분석\]|$)/i;
             const krRegex = /\[한국 시장 종합 분석\]([\s\S]*?)(?=\[Critical Intelligence|$)/i;
-
             const usMatch = text.match(usRegex);
             const krMatch = text.match(krRegex);
 
@@ -310,8 +314,7 @@
 
             const usGrid = document.getElementById('usMetricsGrid');
             const krGrid = document.getElementById('krMetricsGrid');
-            usGrid.innerHTML = '';
-            krGrid.innerHTML = '';
+            usGrid.innerHTML = ''; krGrid.innerHTML = '';
 
             const metricsList = [
                 { id: "버핏 지수", name: "버핏 지수" },
@@ -335,8 +338,28 @@
                 else krGrid.appendChild(card);
             });
 
-            if(text.trim() !== "") {
-                window.scrollTo({ top: document.getElementById('usIntel').offsetTop - 100, behavior: 'smooth' });
+            // 1. 입력 섹션 접기 및 스크롤 실행
+            toggleInput(true);
+        }
+
+        function toggleInput(forceCollapse = false) {
+            const section = document.getElementById('inputSection');
+            const reopenBtn = document.getElementById('reopenBtn');
+            const summaryTitle = document.getElementById('summaryTitle');
+
+            if (forceCollapse) {
+                section.classList.add('collapsed');
+                reopenBtn.classList.remove('hidden');
+                
+                // 접힌 후 부드럽게 스크롤
+                setTimeout(() => {
+                    summaryTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
+            } else {
+                // 다시 열기
+                section.classList.remove('collapsed');
+                reopenBtn.classList.add('hidden');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
             }
         }
     </script>
