@@ -6,97 +6,236 @@
     <title>Financial Risk Dashboard 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .risk-extreme { background-color: #7f1d1d; color: white; border-color: #f87171; } /* Deep Red */
-        .risk-high { background-color: #ef4444; color: white; border-color: #fca5a5; }    /* Light Red */
-        .risk-neutral { background-color: #4b5563; color: white; border-color: #9ca3af; } /* Gray */
-        .risk-safe { background-color: #059669; color: white; border-color: #6ee7b7; }    /* Green */
-        .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-width: 2px; }
-        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;800&display=swap');
+        
+        :root {
+            --toss-blue: #3182f6;
+            --toss-red: #f04452;
+            --glass-bg: rgba(255, 255, 255, 0.7);
+        }
+
+        body { 
+            font-family: 'Pretendard', sans-serif; 
+            background: linear-gradient(135deg, #f2f4f6 0%, #e5e8eb 100%);
+            background-attachment: fixed;
+        }
+
+        .glass-panel {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .risk-extreme { background: rgba(127, 29, 29, 0.85); color: white; border: none; }
+        .risk-high { background: rgba(240, 68, 82, 0.85); color: white; border: none; }
+        .risk-neutral { background: rgba(75, 85, 99, 0.85); color: white; border: none; }
+        .risk-safe { background: rgba(2, 191, 116, 0.85); color: white; border: none; }
+        .risk-default { background: rgba(255, 255, 255, 0.8); color: #1e293b; border: 1px solid white; }
+
+        /* Flip Card Styles */
+        .card { 
+            perspective: 1000px; 
+            height: 280px; 
+            cursor: pointer;
+            background: transparent !important;
+            border: none !important;
+        }
+
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+
+        .card.flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .card-front, .card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .card-back {
+            transform: rotateY(180deg);
+            padding: 1.75rem;
+            justify-content: flex-start;
+            background: #1e293b !important; /* 뒷면은 가독성을 위해 다크톤 고정 */
+            color: white !important;
+        }
+
+        .card:hover { transform: translateY(-8px); }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fadeIn { animation: fadeIn 0.6s ease-out forwards; }
     </style>
 </head>
-<body class="bg-slate-50 min-h-screen p-4 md:p-8">
-    <div class="max-w-7xl mx-auto">
-        <header class="mb-10 text-center">
-            <h1 class="text-4xl font-black text-slate-900 tracking-tight">FINANCIAL RISK <span class="text-red-600">DASHBOARD</span></h1>
-            <p class="text-slate-500 mt-2 font-medium">Real-time Market Intelligence Parsing System v2.0</p>
+<body class="min-h-screen p-4 md:p-12 text-slate-900">
+    <div class="max-w-6xl mx-auto">
+        <header class="mb-16 text-left">
+            <div class="inline-block px-4 py-1.5 mb-4 text-xs font-bold text-blue-600 bg-blue-50 rounded-full">Market Intel v2.0</div>
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">지금 시장은<br><span class="text-blue-600">어떤 위험을 숨기고 있을까요?</span></h1>
+            <p class="text-slate-500 font-medium">데이터를 붙여넣으면 인공지능이 시장의 온도를 분석해드려요.</p>
         </header>
 
-        <!-- 1. Input Area -->
-        <section class="mb-12 bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
-            <div class="flex items-center mb-4 gap-2">
-                <div class="w-2 h-6 bg-blue-600 rounded-full"></div>
-                <h2 class="text-xl font-bold text-slate-800">텍스트 데이터 입력</h2>
+        <section class="mb-20 glass-panel p-8 rounded-[32px] shadow-2xl">
+            <div class="flex items-center mb-6 gap-3">
+                <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
+                <h2 class="text-xl font-bold">분석 결과 입력하기</h2>
             </div>
-            <textarea id="inputText" class="w-full h-64 p-5 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:ring-0 outline-none transition text-sm text-slate-600 leading-relaxed" placeholder="클로드에게 받은 분석 결과 전체를 복사해서 여기에 붙여넣으세요..."></textarea>
-            <button onclick="parseAllData()" class="mt-4 w-full bg-slate-900 hover:bg-blue-700 text-white font-extrabold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98]">
-                데이터 파싱 및 대시보드 업데이트
+            <textarea id="inputText" class="w-full h-48 p-6 bg-white/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition text-base text-slate-700 leading-relaxed placeholder:text-slate-400 shadow-inner" placeholder="분석 결과를 여기에 담아주세요..."></textarea>
+            <button onclick="parseAllData()" class="mt-6 w-full bg-[#3182f6] hover:bg-[#1b64da] text-white font-bold py-5 rounded-2xl shadow-lg transition-all active:scale-[0.98] text-lg">
+                분석 리포트 생성하기
             </button>
         </section>
 
-        <!-- 2. Intelligence Section -->
-        <div class="flex items-center mb-6 gap-2">
-            <div class="w-2 h-6 bg-red-600 rounded-full"></div>
-            <h2 class="text-xl font-bold text-slate-800">Intelligence Analysis</h2>
+        <div class="flex items-center mb-8 gap-3">
+            <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
+            <h2 class="text-2xl font-bold">인공지능의 핵심 요약</h2>
         </div>
-        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
-            <div class="bg-white p-8 rounded-2xl shadow-lg border-l-8 border-blue-600">
-                <h3 class="text-blue-600 font-black uppercase tracking-widest text-sm mb-4">US Market Analysis</h3>
-                <div id="usIntel" class="text-slate-700 text-sm leading-7 whitespace-pre-wrap">데이터 대기 중...</div>
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-20">
+            <div class="glass-panel p-8 rounded-[32px] shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-blue-500 opacity-50"></div>
+                <h3 class="text-blue-600 font-bold text-sm mb-4 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span> US MARKET
+                </h3>
+                <div id="usIntel" class="text-slate-700 text-[15px] leading-8 whitespace-pre-wrap font-medium">데이터를 기다리고 있어요.</div>
             </div>
-            <div class="bg-white p-8 rounded-2xl shadow-lg border-l-8 border-red-600">
-                <h3 class="text-red-600 font-black uppercase tracking-widest text-sm mb-4">KR Market Analysis</h3>
-                <div id="krIntel" class="text-slate-700 text-sm leading-7 whitespace-pre-wrap">데이터 대기 중...</div>
+            <div class="glass-panel p-8 rounded-[32px] shadow-sm relative overflow-hidden">
+                <div class="absolute top-0 left-0 w-full h-1.5 bg-red-500 opacity-50"></div>
+                <h3 class="text-red-500 font-bold text-sm mb-4 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span> KR MARKET
+                </h3>
+                <div id="krIntel" class="text-slate-700 text-[15px] leading-8 whitespace-pre-wrap font-medium">분석 대기 중이에요.</div>
             </div>
         </section>
 
-        <!-- 3. Metrics Grid -->
-        <div class="flex items-center mb-6 gap-2">
-            <div class="w-2 h-6 bg-slate-900 rounded-full"></div>
-            <h2 class="text-xl font-bold text-slate-800">지표별 리스크 상태</h2>
+        <div class="flex items-center mb-10 gap-3">
+            <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
+            <h2 class="text-2xl font-bold">섹터별 리스크 다이얼</h2>
         </div>
-        <div id="metricsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- 카드가 생성되는 위치 -->
+
+        <div class="mb-14">
+            <h3 class="text-sm font-bold text-slate-400 mb-6 px-2 tracking-widest uppercase">United States Indicators</h3>
+            <div id="usMetricsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
+        </div>
+
+        <div class="mb-20">
+            <h3 class="text-sm font-bold text-slate-400 mb-6 px-2 tracking-widest uppercase">South Korea Indicators</h3>
+            <div id="krMetricsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5"></div>
         </div>
     </div>
 
     <script>
+        const metricDefinitions = {
+            "버핏 지수": "상장주식 시가총액을 GDP로 나눈 값입니다. 국가 경제 규모 대비 주식 시장의 저평가/고평가 여부를 판단하는 워런 버핏의 핵심 지표입니다.",
+            "선행 PER": "향후 12개월 예상 순이익을 기준으로 한 주가수익비율입니다. 미래 수익성 대비 현재 주가가 합리적인 수준인지 분석합니다.",
+            "CAPE 지수": "물가 상승분을 반영한 최근 10년간 평균 이익으로 산출한 주가수익비율입니다. 경기 순환 요소를 제거하여 시장의 장기 가치를 평가합니다.",
+            "CNN Fear & Greed": "공포와 탐욕 지수. 투자 심리를 7가지 지표로 분석하여 현재 시장이 과열(Greed) 상태인지 공포(Fear) 상태인지 나타냅니다.",
+            "VIX (변동성)": "S&P 500 옵션 가격을 기반으로 한 향후 30일간의 기대 변동성입니다. 높을수록 시장의 불안감이 크다는 '공포지수'로 통합니다.",
+            "하이일드 스프레드": "부도 위험이 높은 고금리 채권과 국채 간의 금리 차이입니다. 경제 위기 징후가 보이면 기업의 파산 위험이 반영되어 수치가 급등합니다.",
+            "미 10년물 국채": "글로벌 금융 시장의 기준 금리 역할을 합니다. 금리 상승은 주식 시장의 밸류에이션 하락 압력으로 작용하며 경기 전망을 반영합니다.",
+            "S&P 500": "미국 대형주 500개 종목을 포함한 지수입니다. 글로벌 증시의 방향성을 결정하는 가장 중요한 벤치마크 지수입니다.",
+            "KOSPI": "대한민국 유가증권시장의 종합주가지수입니다. 한국 경제의 전반적인 성과와 대외 수출 환경을 반영합니다.",
+            "KOSPI PBR": "주가를 장부 가치로 나눈 비율입니다. 1배 미만이면 자산 가치보다 시가총액이 낮음을 의미하며 한국 시장의 저평가 판단 기준으로 쓰입니다.",
+            "신용융자 잔고": "투자자들이 주식을 사기 위해 증권사에서 빌린 돈의 총액입니다. 과도하게 높을 경우 시장 조정 시 반대매매로 인한 변동성 위험이 커집니다.",
+            "VKOSPI (한국)": "코스피 200 옵션을 바탕으로 한 한국판 공포지수입니다. 국내 투자자들의 심리적 불안도와 예상 변동성을 측정합니다.",
+            "투자심리도": "일정 기간 동안 주가가 상승한 일수의 비율입니다. 투자자들의 매수세가 강한지, 심리적으로 위축되어 있는지를 직관적으로 보여줍니다."
+        };
+
         function getRiskClass(level) {
-            if (!level) return 'bg-white text-slate-800 border-slate-200';
+            if (!level) return 'risk-default';
             const l = level.replace(/\s/g, '');
             if (l.includes('극도과열')) return 'risk-extreme';
             if (l.includes('과열')) return 'risk-high';
             if (l.includes('중립')) return 'risk-neutral';
             if (l.includes('공포') || l.includes('침체')) return 'risk-safe';
-            return 'bg-white text-slate-800 border-slate-200';
+            return 'risk-default';
+        }
+
+        function createCard(m, idx, text) {
+            const valRegex = new RegExp(`${m.id}[^]*?지표:\\s*([^\\n/\\)]+)`, 'i');
+            const riskRegex = new RegExp(`${m.id}[^]*?리스크단계:\\s*([^\\n/\\)]+)`, 'i');
+            const descRegex = new RegExp(`${m.id}[^]*?지표설명:\\s*([^\\n\\)]+)`, 'i');
+
+            const valMatch = text.match(valRegex);
+            const riskMatch = text.match(riskRegex);
+            const descMatch = text.match(descRegex);
+
+            const value = valMatch ? valMatch[1].trim() : 'N/A';
+            const risk = riskMatch ? riskMatch[1].trim() : '미확인';
+            const aiDesc = descMatch ? descMatch[1].trim() : '내용 없음';
+            const riskClass = getRiskClass(risk);
+
+            const card = document.createElement('div');
+            card.className = `card animate-fadeIn`;
+            card.style.animationDelay = `${idx * 0.05}s`;
+            card.onclick = function() { this.classList.toggle('flipped'); };
+
+            card.innerHTML = `
+                <div class="card-inner">
+                    <div class="card-front p-7 shadow-sm border ${riskClass}">
+                        <div class="flex justify-between items-center mb-6">
+                            <span class="text-[11px] font-extrabold opacity-60 tracking-wider uppercase">METRIC ${idx + 1}</span>
+                            <span class="text-[10px] font-bold bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20">${risk}</span>
+                        </div>
+                        <div class="text-sm font-semibold opacity-80 mb-2">${m.name}</div>
+                        <div class="text-3xl font-bold mb-6 tracking-tight">${value}</div>
+                        <div class="text-[12px] leading-relaxed opacity-80 font-medium pt-5 border-t border-white/10 overflow-hidden line-clamp-3">
+                            ${aiDesc}
+                        </div>
+                    </div>
+                    <div class="card-back shadow-xl border border-slate-700">
+                        <div class="text-[11px] font-extrabold text-blue-400 mb-4 tracking-widest uppercase">What is ${m.name}?</div>
+                        <div class="text-[14px] leading-relaxed font-medium text-slate-200">
+                            ${metricDefinitions[m.name] || "설명이 정의되지 않았습니다."}
+                        </div>
+                        <div class="mt-auto pt-4 text-[10px] text-slate-500 font-bold text-center border-t border-slate-800">
+                            CLICK TO REVERSE
+                        </div>
+                    </div>
+                </div>
+            `;
+            return card;
         }
 
         function parseAllData() {
             const text = document.getElementById('inputText').value;
-            
-            // --- 1. Intelligence 파싱 (강화된 정규식) ---
             const usRegex = /\[미국 시장 종합 분석\]([\s\S]*?)(?=\[한국 시장 종합 분석\]|$)/i;
             const krRegex = /\[한국 시장 종합 분석\]([\s\S]*?)(?=\[Critical Intelligence|$)/i;
 
             const usMatch = text.match(usRegex);
             const krMatch = text.match(krRegex);
 
-            document.getElementById('usIntel').innerText = usMatch ? usMatch[1].trim() : "데이터 형식이 맞지 않거나 존재하지 않습니다.";
-            document.getElementById('krIntel').innerText = krMatch ? krMatch[1].trim() : "데이터 형식이 맞지 않거나 존재하지 않습니다.";
+            document.getElementById('usIntel').innerText = usMatch ? usMatch[1].trim() : "데이터가 충분하지 않아요.";
+            document.getElementById('krIntel').innerText = krMatch ? krMatch[1].trim() : "데이터가 충분하지 않아요.";
 
-            // --- 2. 지표 카드 파싱 ---
-            const grid = document.getElementById('metricsGrid');
-            grid.innerHTML = '';
+            const usGrid = document.getElementById('usMetricsGrid');
+            const krGrid = document.getElementById('krMetricsGrid');
+            usGrid.innerHTML = '';
+            krGrid.innerHTML = '';
 
             const metricsList = [
                 { id: "버핏 지수", name: "버핏 지수" },
                 { id: "선행 PER", name: "선행 PER" },
                 { id: "CAPE 지수", name: "CAPE 지수" },
                 { id: "CNN 공포/탐욕", name: "CNN Fear & Greed" },
-                { id: "VIX 지수", name: "VIX (Volatility)" },
+                { id: "VIX 지수", name: "VIX (변동성)" },
                 { id: "하이일드 스프레드", name: "하이일드 스프레드" },
-                { id: "국채 금리", name: "미 10년물 금리" },
+                { id: "국채 금리", name: "미 10년물 국채" },
                 { id: "S&P 500 종가", name: "S&P 500" },
                 { id: "KOSPI 종가", name: "KOSPI" },
                 { id: "KOSPI PBR", name: "KOSPI PBR" },
@@ -106,37 +245,13 @@
             ];
 
             metricsList.forEach((m, idx) => {
-                // 수치 추출: "지표: 200%" 또는 "지표: 200 (단위)" 형태 대응
-                const valRegex = new RegExp(`${m.id}[^]*?지표:\\s*([^\\n/\\)]+)`, 'i');
-                const riskRegex = new RegExp(`${m.id}[^]*?리스크단계:\\s*([^\\n/\\)]+)`, 'i');
-                const descRegex = new RegExp(`${m.id}[^]*?지표설명:\\s*([^\\n\\)]+)`, 'i');
-
-                const valMatch = text.match(valRegex);
-                const riskMatch = text.match(riskRegex);
-                const descMatch = text.match(descRegex);
-
-                const value = valMatch ? valMatch[1].trim() : 'N/A';
-                const risk = riskMatch ? riskMatch[1].trim() : '미확인';
-                const desc = descMatch ? descMatch[1].trim() : '설명 데이터가 없습니다.';
-
-                const card = document.createElement('div');
-                card.className = `card p-6 rounded-2xl shadow-sm border ${getRiskClass(risk)}`;
-                card.innerHTML = `
-                    <div class="flex justify-between items-start mb-4">
-                        <span class="text-[10px] font-bold opacity-70 tracking-widest uppercase">Metric ${idx + 1}</span>
-                        <span class="text-[10px] font-bold bg-black bg-opacity-20 px-2 py-0.5 rounded">${risk}</span>
-                    </div>
-                    <div class="text-sm font-semibold opacity-90 mb-1">${m.name}</div>
-                    <div class="text-3xl font-black mb-4 tracking-tighter">${value}</div>
-                    <div class="text-[11px] leading-relaxed opacity-80 font-medium border-t border-white border-opacity-20 pt-3">
-                        ${desc}
-                    </div>
-                `;
-                grid.appendChild(card);
+                const card = createCard(m, idx, text);
+                if (idx < 8) usGrid.appendChild(card);
+                else krGrid.appendChild(card);
             });
 
             if(text.trim() !== "") {
-                window.scrollTo({ top: document.getElementById('usIntel').offsetTop - 50, behavior: 'smooth' });
+                window.scrollTo({ top: document.getElementById('usIntel').offsetTop - 100, behavior: 'smooth' });
             }
         }
     </script>
