@@ -109,10 +109,11 @@
 
         <!-- 분석 결과 입력 섹션 -->
         <section id="inputSection" class="mb-20 glass-panel p-8 rounded-[32px] shadow-2xl">
-            <div class="flex items-center mb-6 gap-3">
+            <div class="flex items-center mb-1 gap-3">
                 <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
                 <h2 class="text-xl font-bold">분석 결과 입력하기</h2>
             </div>
+            <p class="text-sm text-slate-400 mb-6 px-4">텍스트 형식의 시장 분석 원문을 붙여넣는 공간입니다.</p>
             <textarea id="inputText" class="w-full h-48 p-6 bg-white/50 border-0 rounded-2xl focus:ring-2 focus:ring-blue-500 outline-none transition text-base text-slate-700 leading-relaxed placeholder:text-slate-400 shadow-inner" placeholder="분석 결과를 여기에 담아주세요..."></textarea>
             <button onclick="parseAllData()" class="mt-6 w-full bg-[#3182f6] hover:bg-[#1b64da] text-white font-bold py-5 rounded-2xl shadow-lg transition-all active:scale-[0.98] text-lg">
                 분석 리포트 생성하기
@@ -120,21 +121,24 @@
         </section>
 
         <!-- 핵심 요약 제목 및 아이콘 버튼 영역 -->
-        <div id="summaryTitle" class="flex items-center mb-8 gap-3">
-            <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
-            <h2 class="text-2xl font-bold">핵심 요약</h2>
-            
-            <!-- 아이콘 컨트롤 박스 -->
-            <div id="controlBox" class="hidden ml-auto flex gap-4">
-                <button id="viewBtn" onclick="toggleView()" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="입력 내용 보기/숨기기">
-                    <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                    <svg id="icon-eye-off" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
-                </button>
-                <button id="editBtn" onclick="toggleEdit()" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="데이터 수정하기">
-                    <svg id="icon-pencil" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
-                    <svg id="icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                </button>
+        <div>
+            <div id="summaryTitle" class="flex items-center mb-1 gap-3">
+                <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
+                <h2 class="text-2xl font-bold">핵심 요약</h2>
+                
+                <!-- 아이콘 컨트롤 박스 -->
+                <div id="controlBox" class="hidden ml-auto flex gap-4">
+                    <button id="viewBtn" onclick="toggleView()" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="입력 내용 보기/숨기기">
+                        <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        <svg id="icon-eye-off" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                    </button>
+                    <button id="editBtn" onclick="toggleEdit()" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="데이터 수정하기">
+                        <svg id="icon-pencil" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        <svg id="icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
             </div>
+            <p class="text-sm text-slate-400 mb-8 px-4">미국과 한국 시장의 주요 흐름을 종합하여 요약해 드립니다.</p>
         </div>
 
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-20">
@@ -154,9 +158,12 @@
             </div>
         </section>
 
-        <div id="metricsTitle" class="flex items-center mb-10 gap-3">
-            <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
-            <h2 class="text-2xl font-bold">섹터별 리스크 다이얼</h2>
+        <div>
+            <div id="metricsTitle" class="flex items-center mb-1 gap-3">
+                <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
+                <h2 class="text-2xl font-bold">섹터별 리스크 다이얼</h2>
+            </div>
+            <p class="text-sm text-slate-400 mb-10 px-4">각 지표별 상세 수치와 위험도를 카드로 시각화한 영역입니다.</p>
         </div>
 
         <div class="mb-14">
