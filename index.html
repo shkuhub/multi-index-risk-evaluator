@@ -33,10 +33,9 @@
         .risk-safe { background: rgba(2, 191, 116, 0.85); color: white; border: none; }
         .risk-default { background: rgba(255, 255, 255, 0.8); color: #1e293b; border: 1px solid white; }
 
-        /* Flip Card Styles */
         .card { 
             perspective: 1000px; 
-            height: 280px; 
+            height: 340px;
             cursor: pointer;
             background: transparent !important;
             border: none !important;
@@ -50,9 +49,7 @@
             transform-style: preserve-3d;
         }
 
-        .card.flipped .card-inner {
-            transform: rotateY(180deg);
-        }
+        .card.flipped .card-inner { transform: rotateY(180deg); }
 
         .card-front, .card-back {
             position: absolute;
@@ -68,13 +65,16 @@
 
         .card-back {
             transform: rotateY(180deg);
-            padding: 1.75rem;
+            padding: 1.5rem;
             justify-content: flex-start;
-            background: #1e293b !important; /* 뒷면은 가독성을 위해 다크톤 고정 */
+            background: #1e293b !important;
             color: white !important;
         }
 
         .card:hover { transform: translateY(-8px); }
+
+        .custom-scroll::-webkit-scrollbar { width: 4px; }
+        .custom-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.2); border-radius: 10px; }
 
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(10px); }
@@ -86,7 +86,7 @@
 <body class="min-h-screen p-4 md:p-12 text-slate-900">
     <div class="max-w-6xl mx-auto">
         <header class="mb-16 text-left">
-            <div class="inline-block px-4 py-1.5 mb-4 text-xs font-bold text-blue-600 bg-blue-50 rounded-full">Market Intel v2.0</div>
+            <div class="inline-block px-4 py-1.5 mb-4 text-xs font-bold text-blue-600 bg-blue-50 rounded-full">Market Intel v2.1</div>
             <h1 class="text-4xl md:text-5xl font-extrabold tracking-tight mb-3">지금 시장은<br><span class="text-blue-600">어떤 위험을 숨기고 있을까요?</span></h1>
             <p class="text-slate-500 font-medium">데이터를 붙여넣으면 인공지능이 시장의 온도를 분석해드려요.</p>
         </header>
@@ -141,19 +141,71 @@
 
     <script>
         const metricDefinitions = {
-            "버핏 지수": "상장주식 시가총액을 GDP로 나눈 값입니다. 국가 경제 규모 대비 주식 시장의 저평가/고평가 여부를 판단하는 워런 버핏의 핵심 지표입니다.",
-            "선행 PER": "향후 12개월 예상 순이익을 기준으로 한 주가수익비율입니다. 미래 수익성 대비 현재 주가가 합리적인 수준인지 분석합니다.",
-            "CAPE 지수": "물가 상승분을 반영한 최근 10년간 평균 이익으로 산출한 주가수익비율입니다. 경기 순환 요소를 제거하여 시장의 장기 가치를 평가합니다.",
-            "CNN Fear & Greed": "공포와 탐욕 지수. 투자 심리를 7가지 지표로 분석하여 현재 시장이 과열(Greed) 상태인지 공포(Fear) 상태인지 나타냅니다.",
-            "VIX (변동성)": "S&P 500 옵션 가격을 기반으로 한 향후 30일간의 기대 변동성입니다. 높을수록 시장의 불안감이 크다는 '공포지수'로 통합니다.",
-            "하이일드 스프레드": "부도 위험이 높은 고금리 채권과 국채 간의 금리 차이입니다. 경제 위기 징후가 보이면 기업의 파산 위험이 반영되어 수치가 급등합니다.",
-            "미 10년물 국채": "글로벌 금융 시장의 기준 금리 역할을 합니다. 금리 상승은 주식 시장의 밸류에이션 하락 압력으로 작용하며 경기 전망을 반영합니다.",
-            "S&P 500": "미국 대형주 500개 종목을 포함한 지수입니다. 글로벌 증시의 방향성을 결정하는 가장 중요한 벤치마크 지수입니다.",
-            "KOSPI": "대한민국 유가증권시장의 종합주가지수입니다. 한국 경제의 전반적인 성과와 대외 수출 환경을 반영합니다.",
-            "KOSPI PBR": "주가를 장부 가치로 나눈 비율입니다. 1배 미만이면 자산 가치보다 시가총액이 낮음을 의미하며 한국 시장의 저평가 판단 기준으로 쓰입니다.",
-            "신용융자 잔고": "투자자들이 주식을 사기 위해 증권사에서 빌린 돈의 총액입니다. 과도하게 높을 경우 시장 조정 시 반대매매로 인한 변동성 위험이 커집니다.",
-            "VKOSPI (한국)": "코스피 200 옵션을 바탕으로 한 한국판 공포지수입니다. 국내 투자자들의 심리적 불안도와 예상 변동성을 측정합니다.",
-            "투자심리도": "일정 기간 동안 주가가 상승한 일수의 비율입니다. 투자자들의 매수세가 강한지, 심리적으로 위축되어 있는지를 직관적으로 보여줍니다."
+            "버핏 지수": {
+                desc: "상장주식 시가총액을 GDP로 나눈 값입니다. 국가 경제 규모 대비 주식 시장의 저평가/고평가 여부를 판단하는 워런 버핏의 핵심 지표입니다.",
+                criteria: "200% 이상: 극도과열 | 150% 이상: 과열 | 115% 이상: 중립 | 90% 이상: 공포 | 90% 미만: 침체",
+                judge: (v) => v >= 200 ? '극도과열' : v >= 150 ? '과열' : v >= 115 ? '중립' : v >= 90 ? '공포' : '침체'
+            },
+            "선행 PER": {
+                desc: "향후 12개월 예상 순이익을 기준으로 한 주가수익비율입니다. 미래 수익성 대비 현재 주가가 합리적인 수준인지 분석합니다.",
+                criteria: "22배 이상: 극도과열 | 19배 이상: 과열 | 16배 이상: 중립 | 13배 이상: 공포 | 13배 미만: 침체",
+                judge: (v) => v >= 22 ? '극도과열' : v >= 19 ? '과열' : v >= 16 ? '중립' : v >= 13 ? '공포' : '침체'
+            },
+            "CAPE 지수": {
+                desc: "물가 상승분을 반영한 최근 10년간 평균 이익으로 산출한 주가수익비율입니다. 경기 순환 요소를 제거하여 시장의 장기 가치를 평가합니다.",
+                criteria: "35 이상: 극도과열 | 30 이상: 과열 | 25 이상: 중립 | 20 이상: 공포 | 20 미만: 침체",
+                judge: (v) => v >= 35 ? '극도과열' : v >= 30 ? '과열' : v >= 25 ? '중립' : v >= 20 ? '공포' : '침체'
+            },
+            "CNN Fear & Greed": {
+                desc: "공포와 탐욕 지수. 투자 심리를 7가지 지표로 분석하여 현재 시장이 과열(Greed) 상태인지 공포(Fear) 상태인지 나타냅니다.",
+                criteria: "75 이상: 극도과열 | 60 이상: 과열 | 40 이상: 중립 | 25 이상: 공포 | 25 미만: 침체",
+                judge: (v) => v >= 75 ? '극도과열' : v >= 60 ? '과열' : v >= 40 ? '중립' : v >= 25 ? '공포' : '침체'
+            },
+            "VIX (변동성)": {
+                desc: "S&P 500 옵션 가격을 기반으로 한 향후 30일간의 기대 변동성입니다. 높을수록 시장의 불안감이 크다는 '공포지수'로 통합니다.",
+                criteria: "12 미만: 극도과열 | 15 미만: 과열 | 20 미만: 중립 | 30 미만: 공포 | 30 이상: 침체",
+                judge: (v) => v < 12 ? '극도과열' : v < 15 ? '과열' : v < 20 ? '중립' : v < 30 ? '공포' : '침체'
+            },
+            "하이일드 스프레드": {
+                desc: "부도 위험이 높은 고금리 채권과 국채 간의 금리 차이입니다. 경제 위기 징후가 보이면 기업의 파산 위험이 반영되어 수치가 급등합니다.",
+                criteria: "3.0% 미만: 극도과열 | 3.5% 미만: 과열 | 4.5% 미만: 중립 | 6.0% 미만: 공포 | 6.0% 이상: 침체",
+                judge: (v) => v < 3.0 ? '극도과열' : v < 3.5 ? '과열' : v < 4.5 ? '중립' : v < 6.0 ? '공포' : '침체'
+            },
+            "미 10년물 국채": {
+                desc: "글로벌 금융 시장의 기준 금리 역할을 합니다. 금리 상승은 주식 시장의 밸류에이션 하락 압력으로 작용하며 경기 전망을 반영합니다.",
+                criteria: "4.5% 이상: 공포 | 3.5%~4.5%: 중립 | 3.5% 미만: 경기둔화 우려",
+                judge: (v) => v >= 4.5 ? '공포' : v >= 3.5 ? '중립' : '침체'
+            },
+            "S&P 500": {
+                desc: "미국 대형주 500개 종목을 포함한 지수입니다. 글로벌 증시의 방향성을 결정하는 가장 중요한 벤치마크 지수입니다.",
+                criteria: "추세 분석 필요 (이격도 및 보조지표 활용)",
+                judge: (v) => '중립' 
+            },
+            "KOSPI": {
+                desc: "대한민국 유가증권시장의 종합주가지수입니다. 한국 경제의 전반적인 성과와 대외 수출 환경을 반영합니다.",
+                criteria: "추세 분석 필요 (밸류에이션 밴드 활용)",
+                judge: (v) => '중립'
+            },
+            "KOSPI PBR": {
+                desc: "주가를 장부 가치로 나눈 비율입니다. 1배 미만이면 자산 가치보다 시가총액이 낮음을 의미하며 한국 시장의 저평가 판단 기준으로 쓰입니다.",
+                criteria: "1.1배 이상: 극도과열 | 1.0배 이상: 과열 | 0.9배 이상: 중립 | 0.8배 이상: 공포 | 0.8배 미만: 침체",
+                judge: (v) => v >= 1.1 ? '극도과열' : v >= 1.0 ? '과열' : v >= 0.9 ? '중립' : v >= 0.8 ? '공포' : '침체'
+            },
+            "신용융자 잔고": {
+                desc: "투자자들이 주식을 사기 위해 증권사에서 빌린 돈의 총액입니다. 과도하게 높을 경우 시장 조정 시 반대매매로 인한 변동성 위험이 커집니다.",
+                criteria: "22조 이상: 극도과열 | 20조 이상: 과열 | 18조 이상: 중립 | 16조 이상: 공포 | 16조 미만: 침체",
+                judge: (v) => v >= 22 ? '극도과열' : v >= 20 ? '과열' : v >= 18 ? '중립' : v >= 16 ? '공포' : '침체'
+            },
+            "VKOSPI (한국)": {
+                desc: "코스피 200 옵션을 바탕으로 한 한국판 공포지수입니다. 국내 투자자들의 심리적 불안도와 예상 변동성을 측정합니다.",
+                criteria: "12 미만: 극도과열 | 14 미만: 과열 | 18 미만: 중립 | 25 미만: 공포 | 25 이상: 침체",
+                judge: (v) => v < 12 ? '극도과열' : v < 14 ? '과열' : v < 18 ? '중립' : v < 25 ? '공포' : '침체'
+            },
+            "투자심리도": {
+                desc: "일정 기간 동안 주가가 상승한 일수의 비율입니다. 투자자들의 매수세가 강한지, 심리적으로 위축되어 있는지를 직관적으로 보여줍니다.",
+                criteria: "80% 이상: 극도과열 | 70% 이상: 과열 | 30%~70%: 중립 | 20% 이상: 공포 | 20% 미만: 침체",
+                judge: (v) => v >= 80 ? '극도과열' : v >= 70 ? '과열' : v >= 30 ? '중립' : v >= 20 ? '공포' : '침체'
+            }
         };
 
         function getRiskClass(level) {
@@ -166,18 +218,44 @@
             return 'risk-default';
         }
 
+        function extractNumber(str) {
+            if (!str) return null;
+            const match = str.replace(/,/g, '').match(/-?\d+\.?\d*/);
+            return match ? parseFloat(match[0]) : null;
+        }
+
         function createCard(m, idx, text) {
+            // 지표와 리스크단계는 기존의 클렌징 로직 유지 (괄호 기준으로 자르기)
             const valRegex = new RegExp(`${m.id}[^]*?지표:\\s*([^\\n/\\)]+)`, 'i');
             const riskRegex = new RegExp(`${m.id}[^]*?리스크단계:\\s*([^\\n/\\)]+)`, 'i');
-            const descRegex = new RegExp(`${m.id}[^]*?지표설명:\\s*([^\\n\\)]+)`, 'i');
+            
+            // 지표설명은 데이터 클렌징 제외, 단 문장 맨 끝의 ')'는 제거
+            const descRegex = new RegExp(`${m.id}[^]*?지표설명:\\s*([^\\n]+)`, 'i');
 
             const valMatch = text.match(valRegex);
             const riskMatch = text.match(riskRegex);
             const descMatch = text.match(descRegex);
 
             const value = valMatch ? valMatch[1].trim() : 'N/A';
-            const risk = riskMatch ? riskMatch[1].trim() : '미확인';
-            const aiDesc = descMatch ? descMatch[1].trim() : '내용 없음';
+            
+            // 지표설명 처리: 문장 끝의 )만 제거
+            let aiDesc = descMatch ? descMatch[1].trim() : '';
+            if (aiDesc.endsWith(')')) {
+                aiDesc = aiDesc.slice(0, -1).trim();
+            }
+
+            const staticInfo = metricDefinitions[m.name] || { desc: "정보 없음", criteria: "기준 미설정", judge: () => '미확인' };
+
+            let risk = '미확인';
+            if (riskMatch && riskMatch[1].trim() !== "" && riskMatch[1].trim() !== "미확인") {
+                risk = riskMatch[1].trim();
+            } else {
+                const numValue = extractNumber(value);
+                if (numValue !== null) {
+                    risk = staticInfo.judge(numValue);
+                }
+            }
+
             const riskClass = getRiskClass(risk);
 
             const card = document.createElement('div');
@@ -187,24 +265,31 @@
 
             card.innerHTML = `
                 <div class="card-inner">
-                    <div class="card-front p-7 shadow-sm border ${riskClass}">
+                    <div class="card-front p-7 shadow-sm border ${riskClass} flex flex-col h-full">
                         <div class="flex justify-between items-center mb-6">
                             <span class="text-[11px] font-extrabold opacity-60 tracking-wider uppercase">METRIC ${idx + 1}</span>
                             <span class="text-[10px] font-bold bg-white/20 backdrop-blur-md px-2.5 py-1 rounded-full border border-white/20">${risk}</span>
                         </div>
-                        <div class="text-sm font-semibold opacity-80 mb-2">${m.name}</div>
-                        <div class="text-3xl font-bold mb-6 tracking-tight">${value}</div>
-                        <div class="text-[12px] leading-relaxed opacity-80 font-medium pt-5 border-t border-white/10 overflow-hidden line-clamp-3">
-                            ${aiDesc}
+                        <div class="text-sm font-semibold opacity-80 mb-1">${m.name}</div>
+                        <div class="text-3xl font-bold mb-4 tracking-tight">${value}</div>
+                        
+                        <div class="pt-4 border-t border-white/20 flex-1 overflow-y-auto custom-scroll">
+                            <div class="text-[13px] leading-relaxed opacity-90 font-medium">
+                                ${aiDesc}
+                            </div>
                         </div>
                     </div>
-                    <div class="card-back shadow-xl border border-slate-700">
-                        <div class="text-[11px] font-extrabold text-blue-400 mb-4 tracking-widest uppercase">What is ${m.name}?</div>
-                        <div class="text-[14px] leading-relaxed font-medium text-slate-200">
-                            ${metricDefinitions[m.name] || "설명이 정의되지 않았습니다."}
+                    <div class="card-back shadow-xl border border-slate-700 flex flex-col h-full">
+                        <div class="text-[11px] font-extrabold text-blue-400 mb-2 tracking-widest uppercase">DEFINITION</div>
+                        <div class="text-[13px] leading-snug font-medium text-slate-200 mb-5">
+                            ${staticInfo.desc}
                         </div>
-                        <div class="mt-auto pt-4 text-[10px] text-slate-500 font-bold text-center border-t border-slate-800">
-                            CLICK TO REVERSE
+                        <div class="text-[11px] font-extrabold text-red-400 mb-2 tracking-widest uppercase">RISK CRITERIA</div>
+                        <div class="text-[12px] leading-relaxed text-slate-400 font-medium">
+                            ${staticInfo.criteria}
+                        </div>
+                        <div class="mt-auto pt-4 text-[9px] text-slate-600 font-bold text-center border-t border-slate-800">
+                            CLICK TO FLIP BACK
                         </div>
                     </div>
                 </div>
