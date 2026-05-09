@@ -107,7 +107,7 @@
             <p class="text-slate-500 font-medium">데이터를 붙여넣으면 시장의 온도를 분석해드려요.</p>
         </header>
 
-        <!-- 분석 결과 입력 섹션 (ID 추가됨) -->
+        <!-- 분석 결과 입력 섹션 -->
         <section id="inputSection" class="mb-20 glass-panel p-8 rounded-[32px] shadow-2xl">
             <div class="flex items-center mb-6 gap-3">
                 <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
@@ -119,12 +119,24 @@
             </button>
         </section>
 
-        <!-- 스크롤 타겟이 될 제목 영역 -->
+        <!-- 핵심 요약 제목 및 아이콘 버튼 영역 -->
         <div id="summaryTitle" class="flex items-center mb-8 gap-3">
             <div class="w-1.5 h-6 bg-slate-900 rounded-full"></div>
             <h2 class="text-2xl font-bold">핵심 요약</h2>
-            <!-- 입력창 다시 열기 버튼 (숨겨져 있다가 분석 후 나타남) -->
-            <button id="reopenBtn" onclick="toggleInput()" class="hidden ml-auto text-sm text-blue-600 font-bold hover:underline">데이터 다시 입력하기</button>
+            
+            <!-- 아이콘 컨트롤 박스 -->
+            <div id="controlBox" class="hidden ml-auto flex gap-4">
+                <!-- 1. 입력 내용 보기/숨기기 아이콘 (눈 모양) -->
+                <button id="viewBtn" onclick="toggleView()" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="입력 내용 보기/숨기기">
+                    <svg id="icon-eye" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    <svg id="icon-eye-off" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>
+                </button>
+                <!-- 2. 다시 입력/취소 아이콘 (연필/X 모양) -->
+                <button id="editBtn" onclick="toggleEdit()" class="p-2 text-slate-400 hover:text-blue-600 transition-colors" title="데이터 수정하기">
+                    <svg id="icon-pencil" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                    <svg id="icon-close" class="hidden" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
+            </div>
         </div>
 
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-20">
@@ -303,7 +315,6 @@
             const text = document.getElementById('inputText').value;
             if (text.trim() === "") { alert("데이터를 입력해주세요."); return; }
 
-            // 데이터 분석 로직
             const usRegex = /\[미국 시장 종합 분석\]([\s\S]*?)(?=\[한국 시장 종합 분석\]|$)/i;
             const krRegex = /\[한국 시장 종합 분석\]([\s\S]*?)(?=\[Critical Intelligence|$)/i;
             const usMatch = text.match(usRegex);
@@ -338,28 +349,76 @@
                 else krGrid.appendChild(card);
             });
 
-            // 1. 입력 섹션 접기 및 스크롤 실행
-            toggleInput(true);
+            // 입력창 접고 컨트롤 박스 표시
+            const section = document.getElementById('inputSection');
+            section.classList.add('collapsed');
+            document.getElementById('controlBox').classList.remove('hidden');
+            
+            // 아이콘 상태 초기화 (접힌 상태)
+            document.getElementById('icon-eye').classList.remove('hidden');
+            document.getElementById('icon-eye-off').classList.add('hidden');
+            document.getElementById('icon-pencil').classList.remove('hidden');
+            document.getElementById('icon-close').classList.add('hidden');
+
+            setTimeout(() => {
+                document.getElementById('summaryTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 300);
         }
 
-        function toggleInput(forceCollapse = false) {
+        // 1. 눈 아이콘 기능: 입력 내용만 단순히 토글 (스크롤 이동 없음)
+        function toggleView() {
             const section = document.getElementById('inputSection');
-            const reopenBtn = document.getElementById('reopenBtn');
-            const summaryTitle = document.getElementById('summaryTitle');
+            const eyeOn = document.getElementById('icon-eye');
+            const eyeOff = document.getElementById('icon-eye-off');
+            const pencil = document.getElementById('icon-pencil');
+            const close = document.getElementById('icon-close');
 
-            if (forceCollapse) {
-                section.classList.add('collapsed');
-                reopenBtn.classList.remove('hidden');
-                
-                // 접힌 후 부드럽게 스크롤
-                setTimeout(() => {
-                    summaryTitle.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }, 300);
-            } else {
-                // 다시 열기
+            const isCollapsed = section.classList.contains('collapsed');
+
+            if (isCollapsed) {
+                // 보기
                 section.classList.remove('collapsed');
-                reopenBtn.classList.add('hidden');
+                eyeOn.classList.add('hidden');
+                eyeOff.classList.remove('hidden');
+            } else {
+                // 숨기기
+                section.classList.add('collapsed');
+                eyeOn.classList.remove('hidden');
+                eyeOff.classList.add('hidden');
+                // 만약 수정 모드(X표시)였다면 연필로 되돌림
+                pencil.classList.remove('hidden');
+                close.classList.add('hidden');
+            }
+        }
+
+        // 2. 연필 아이콘 기능: 수정 모드 토글 (최상단 스크롤 포함)
+        function toggleEdit() {
+            const section = document.getElementById('inputSection');
+            const pencil = document.getElementById('icon-pencil');
+            const close = document.getElementById('icon-close');
+            const eyeOn = document.getElementById('icon-eye');
+            const eyeOff = document.getElementById('icon-eye-off');
+
+            const isCollapsed = section.classList.contains('collapsed');
+
+            if (isCollapsed) {
+                // 수정하기 (열기)
+                section.classList.remove('collapsed');
+                pencil.classList.add('hidden');
+                close.classList.remove('hidden');
+                eyeOn.classList.add('hidden');
+                eyeOff.classList.remove('hidden');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
+            } else {
+                // 취소하기 (접기)
+                section.classList.add('collapsed');
+                pencil.classList.remove('hidden');
+                close.classList.add('hidden');
+                eyeOn.classList.remove('hidden');
+                eyeOff.classList.add('hidden');
+                setTimeout(() => {
+                    document.getElementById('summaryTitle').scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 300);
             }
         }
     </script>
