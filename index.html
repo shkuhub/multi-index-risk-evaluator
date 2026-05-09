@@ -3,168 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Market Risk Intelligence</title>
+    <title>Financial Risk Dashboard 2026</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
-        .risk-extreme-greed { background-color: #7f1d1d; color: white; } /* Deep Red */
-        .risk-greed { background-color: #ef4444; color: white; }         /* Light Red */
-        .risk-neutral { background-color: #f59e0b; color: white; }       /* Yellow/Orange */
-        .risk-fear { background-color: #22c55e; color: white; }          /* Light Green */
-        .risk-extreme-fear { background-color: #14532d; color: white; }  /* Deep Green */
-        .tooltip:hover .tooltip-text { visibility: visible; opacity: 1; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        .risk-extreme { background-color: #7f1d1d; color: white; border-color: #f87171; } /* Deep Red */
+        .risk-high { background-color: #ef4444; color: white; border-color: #fca5a5; }    /* Light Red */
+        .risk-neutral { background-color: #4b5563; color: white; border-color: #9ca3af; } /* Gray */
+        .risk-safe { background-color: #059669; color: white; border-color: #6ee7b7; }    /* Green */
+        .card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); border-width: 2px; }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
     </style>
 </head>
-<body class="bg-gray-900 text-gray-100 min-h-screen p-4 md:p-8">
-
-    <div class="max-w-6xl mx-auto">
-        <header class="mb-8 border-b border-gray-700 pb-4">
-            <h1 class="text-3xl font-bold text-blue-400 mb-2">Market Risk Analyzer <span class="text-sm font-normal text-gray-400">v2026.05</span></h1>
-            <p class="text-gray-400">데이터를 복사하여 붙여넣으면 실시간 리스크 평가를 수행합니다.</p>
+<body class="bg-slate-50 min-h-screen p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-black text-slate-900 tracking-tight">FINANCIAL RISK <span class="text-red-600">DASHBOARD</span></h1>
+            <p class="text-slate-500 mt-2 font-medium">Real-time Market Intelligence Parsing System v2.0</p>
         </header>
 
-        <!-- Input Area -->
-        <div class="mb-8">
-            <textarea id="rawInput" class="w-full h-40 bg-gray-800 border border-gray-700 rounded-lg p-4 text-sm focus:ring-2 focus:ring-blue-500 outline-none" placeholder="여기에 검색 결과 텍스트를 붙여넣으세요..."></textarea>
-            <button onclick="analyzeData()" class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-bold transition">리스크 분석 실행</button>
+        <!-- 1. Input Area -->
+        <section class="mb-12 bg-white p-6 rounded-2xl shadow-xl border border-slate-200">
+            <div class="flex items-center mb-4 gap-2">
+                <div class="w-2 h-6 bg-blue-600 rounded-full"></div>
+                <h2 class="text-xl font-bold text-slate-800">텍스트 데이터 입력</h2>
+            </div>
+            <textarea id="inputText" class="w-full h-64 p-5 border-2 border-slate-100 rounded-xl focus:border-blue-500 focus:ring-0 outline-none transition text-sm text-slate-600 leading-relaxed" placeholder="클로드에게 받은 분석 결과 전체를 복사해서 여기에 붙여넣으세요..."></textarea>
+            <button onclick="parseAllData()" class="mt-4 w-full bg-slate-900 hover:bg-blue-700 text-white font-extrabold py-4 rounded-xl shadow-lg transition-all active:scale-[0.98]">
+                데이터 파싱 및 대시보드 업데이트
+            </button>
+        </section>
+
+        <!-- 2. Intelligence Section -->
+        <div class="flex items-center mb-6 gap-2">
+            <div class="w-2 h-6 bg-red-600 rounded-full"></div>
+            <h2 class="text-xl font-bold text-slate-800">Intelligence Analysis</h2>
         </div>
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
+            <div class="bg-white p-8 rounded-2xl shadow-lg border-l-8 border-blue-600">
+                <h3 class="text-blue-600 font-black uppercase tracking-widest text-sm mb-4">US Market Analysis</h3>
+                <div id="usIntel" class="text-slate-700 text-sm leading-7 whitespace-pre-wrap">데이터 대기 중...</div>
+            </div>
+            <div class="bg-white p-8 rounded-2xl shadow-lg border-l-8 border-red-600">
+                <h3 class="text-red-600 font-black uppercase tracking-widest text-sm mb-4">KR Market Analysis</h3>
+                <div id="krIntel" class="text-slate-700 text-sm leading-7 whitespace-pre-wrap">데이터 대기 중...</div>
+            </div>
+        </section>
 
-        <!-- Intelligence Section (Dynamic) -->
-        <div id="intelSection" class="hidden mb-8 p-6 bg-red-900/20 border border-red-500/50 rounded-xl">
-            <h2 class="text-xl font-bold text-red-400 mb-2"><i class="fas fa-exclamation-triangle mr-2"></i>Critical Intelligence</h2>
-            <p id="intelMessage" class="text-gray-200 italic"></p>
+        <!-- 3. Metrics Grid -->
+        <div class="flex items-center mb-6 gap-2">
+            <div class="w-2 h-6 bg-slate-900 rounded-full"></div>
+            <h2 class="text-xl font-bold text-slate-800">지표별 리스크 상태</h2>
         </div>
-
-        <!-- Dashboard Grid -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <!-- Global US -->
-            <section>
-                <h2 class="text-xl font-semibold mb-4 flex items-center"><img src="https://flagcdn.com/us.svg" class="w-6 mr-2"> United States</h2>
-                <div id="us-cards" class="space-y-4">
-                    <!-- Cards will be injected here -->
-                </div>
-            </section>
-
-            <!-- South Korea -->
-            <section>
-                <h2 class="text-xl font-semibold mb-4 flex items-center"><img src="https://flagcdn.com/kr.svg" class="w-6 mr-2"> South Korea</h2>
-                <div id="kr-cards" class="space-y-4">
-                    <!-- Cards will be injected here -->
-                </div>
-            </section>
+        <div id="metricsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- 카드가 생성되는 위치 -->
         </div>
     </div>
 
     <script>
-        const metricsDefinition = {
-            // 미국 지표
-            buffett: { name: '버핏 지수', unit: '%', category: 'US', defect: '기업의 해외 매출 비중 확대를 반영 못 함. (국내 GDP 대비 시가총액의 한계)' },
-            fwdPer: { name: '선행 PER', unit: '', category: 'US', defect: '미래 이익 추정치의 낙관적 편향 가능성이 큼.' },
-            cape: { name: 'CAPE 지수', unit: '', category: 'US', defect: '회계 기준 변경과 저금리 추세를 반영하지 못해 늘 과대평가 상태로 보임.' },
-            fgIndex: { name: 'CNN 공포/탐욕', unit: '', category: 'US', defect: '극단적 투심은 반영하나 펀더멘탈의 질적 변화를 무시함.' },
-            vix: { name: 'VIX 지수', unit: '', category: 'US', defect: '현재의 평온함이 미래의 안전을 보장하지 않음(Short-vol 쏠림 위험).' },
-            hySpread: { name: '하이일드 스프레드', unit: '%', category: 'US', defect: '유동성 공급 과잉 시 기업 부도 위험을 과소평가함.' },
-            // 한국 지표
-            credit: { name: '신용융자 잔고', unit: '조', category: 'KR', defect: '지수 하락 시 반대매매로 인한 하락 가속화의 도화선이 됨.' },
-            pbr: { name: 'KOSPI PBR', unit: 'x', category: 'KR', defect: '자산 가치만 보며 자기자본이익률(ROE) 등 수익성을 간과함.' },
-            vkospi: { name: 'VKOSPI', unit: '', category: 'KR', defect: '옵션 시장의 변동성일 뿐, 실제 현물 시장의 방향성을 담보하지 않음.' }
-        };
-
-        function getRiskLevel(metric, value) {
-            // 리스크 판별 로직 (2026년 5월 상황에 맞춘 임계치)
-            if (metric === 'buffett') {
-                if (value >= 200) return { label: '극도 과열', class: 'risk-extreme-greed' };
-                if (value >= 150) return { label: '과열', class: 'risk-greed' };
-            }
-            if (metric === 'fwdPer') {
-                if (value >= 20) return { label: '극도 과열', class: 'risk-extreme-greed' };
-                if (value >= 18) return { label: '과열', class: 'risk-greed' };
-            }
-            if (metric === 'cape') {
-                if (value >= 35) return { label: '극도 과열', class: 'risk-extreme-greed' };
-            }
-            if (metric === 'credit') {
-                if (value >= 30) return { label: '극도 과열', class: 'risk-extreme-greed' };
-            }
-            if (metric === 'vkospi') {
-                if (value >= 50) return { label: '극도 과열', class: 'risk-extreme-greed' };
-                if (value >= 30) return { label: '과열', class: 'risk-greed' };
-            }
-            return { label: '중립', class: 'risk-neutral' };
+        function getRiskClass(level) {
+            if (!level) return 'bg-white text-slate-800 border-slate-200';
+            const l = level.replace(/\s/g, '');
+            if (l.includes('극도과열')) return 'risk-extreme';
+            if (l.includes('과열')) return 'risk-high';
+            if (l.includes('중립')) return 'risk-neutral';
+            if (l.includes('공포') || l.includes('침체')) return 'risk-safe';
+            return 'bg-white text-slate-800 border-slate-200';
         }
 
-        function analyzeData() {
-            const text = document.getElementById('rawInput').value;
-            const results = {
-                buffett: parseFloat(text.match(/버핏 지수.*?(\d+\.?\d*)/)?.[1]),
-                fwdPer: parseFloat(text.match(/선행 PER.*?(\d+\.?\d*)/)?.[1]),
-                cape: parseFloat(text.match(/CAPE 지수.*?(\d+\.?\d*)/)?.[1]),
-                fgIndex: parseFloat(text.match(/공포\/탐욕 지수.*?(\d+)/)?.[1]),
-                vix: parseFloat(text.match(/VIX.*?(\d+\.?\d*)/)?.[1]),
-                hySpread: parseFloat(text.match(/하이일드 스프레드.*?(\d+\.?\d*)/)?.[1]),
-                credit: parseFloat(text.match(/신용(?:거래)?융자 잔고.*?(\d+)조/)?.[1]),
-                pbr: parseFloat(text.match(/PBR.*?(\d+\.?\d*)x/)?.[1]),
-                vkospi: parseFloat(text.match(/VKOSPI.*?(\d+\.?\d*)/)?.[1])
-            };
+        function parseAllData() {
+            const text = document.getElementById('inputText').value;
+            
+            // --- 1. Intelligence 파싱 (강화된 정규식) ---
+            const usRegex = /\[미국 시장 종합 분석\]([\s\S]*?)(?=\[한국 시장 종합 분석\]|$)/i;
+            const krRegex = /\[한국 시장 종합 분석\]([\s\S]*?)(?=\[Critical Intelligence|$)/i;
 
-            renderDashboard(results);
-            generateIntelligence(results);
-        }
+            const usMatch = text.match(usRegex);
+            const krMatch = text.match(krRegex);
 
-        function renderDashboard(data) {
-            const usContainer = document.getElementById('us-cards');
-            const krContainer = document.getElementById('kr-cards');
-            usContainer.innerHTML = '';
-            krContainer.innerHTML = '';
+            document.getElementById('usIntel').innerText = usMatch ? usMatch[1].trim() : "데이터 형식이 맞지 않거나 존재하지 않습니다.";
+            document.getElementById('krIntel').innerText = krMatch ? krMatch[1].trim() : "데이터 형식이 맞지 않거나 존재하지 않습니다.";
 
-            for (let key in data) {
-                const val = data[key];
-                if (isNaN(val)) continue;
+            // --- 2. 지표 카드 파싱 ---
+            const grid = document.getElementById('metricsGrid');
+            grid.innerHTML = '';
 
-                const def = metricsDefinition[key];
-                const risk = getRiskLevel(key, val);
+            const metricsList = [
+                { id: "버핏 지수", name: "버핏 지수" },
+                { id: "선행 PER", name: "선행 PER" },
+                { id: "CAPE 지수", name: "CAPE 지수" },
+                { id: "CNN 공포/탐욕", name: "CNN Fear & Greed" },
+                { id: "VIX 지수", name: "VIX (Volatility)" },
+                { id: "하이일드 스프레드", name: "하이일드 스프레드" },
+                { id: "국채 금리", name: "미 10년물 금리" },
+                { id: "S&P 500 종가", name: "S&P 500" },
+                { id: "KOSPI 종가", name: "KOSPI" },
+                { id: "KOSPI PBR", name: "KOSPI PBR" },
+                { id: "신용융자 잔고", name: "신용융자 잔고" },
+                { id: "VKOSPI", name: "VKOSPI (한국)" },
+                { id: "투자심리도", name: "투자심리도" }
+            ];
 
-                const card = `
-                    <div class="bg-gray-800 border border-gray-700 rounded-lg p-4 flex justify-between items-center shadow-lg">
-                        <div>
-                            <div class="flex items-center gap-2">
-                                <span class="text-gray-400 text-sm font-medium">${def.name}</span>
-                                <div class="relative group cursor-help">
-                                    <i class="fas fa-info-circle text-gray-500 text-xs"></i>
-                                    <div class="absolute bottom-full mb-2 hidden group-hover:block bg-black text-xs p-2 rounded w-48 z-10 border border-gray-600">
-                                        ${def.defect}
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="text-2xl font-bold">${val}${def.unit}</div>
-                        </div>
-                        <div class="${risk.class} px-3 py-1 rounded-full text-xs font-bold">
-                            ${risk.label}
-                        </div>
+            metricsList.forEach((m, idx) => {
+                // 수치 추출: "지표: 200%" 또는 "지표: 200 (단위)" 형태 대응
+                const valRegex = new RegExp(`${m.id}[^]*?지표:\\s*([^\\n/\\)]+)`, 'i');
+                const riskRegex = new RegExp(`${m.id}[^]*?리스크단계:\\s*([^\\n/\\)]+)`, 'i');
+                const descRegex = new RegExp(`${m.id}[^]*?지표설명:\\s*([^\\n\\)]+)`, 'i');
+
+                const valMatch = text.match(valRegex);
+                const riskMatch = text.match(riskRegex);
+                const descMatch = text.match(descRegex);
+
+                const value = valMatch ? valMatch[1].trim() : 'N/A';
+                const risk = riskMatch ? riskMatch[1].trim() : '미확인';
+                const desc = descMatch ? descMatch[1].trim() : '설명 데이터가 없습니다.';
+
+                const card = document.createElement('div');
+                card.className = `card p-6 rounded-2xl shadow-sm border ${getRiskClass(risk)}`;
+                card.innerHTML = `
+                    <div class="flex justify-between items-start mb-4">
+                        <span class="text-[10px] font-bold opacity-70 tracking-widest uppercase">Metric ${idx + 1}</span>
+                        <span class="text-[10px] font-bold bg-black bg-opacity-20 px-2 py-0.5 rounded">${risk}</span>
+                    </div>
+                    <div class="text-sm font-semibold opacity-90 mb-1">${m.name}</div>
+                    <div class="text-3xl font-black mb-4 tracking-tighter">${value}</div>
+                    <div class="text-[11px] leading-relaxed opacity-80 font-medium border-t border-white border-opacity-20 pt-3">
+                        ${desc}
                     </div>
                 `;
+                grid.appendChild(card);
+            });
 
-                if (def.category === 'US') usContainer.innerHTML += card;
-                else krContainer.innerHTML += card;
-            }
-        }
-
-        function generateIntelligence(data) {
-            const intelSection = document.getElementById('intelSection');
-            const intelMessage = document.getElementById('intelMessage');
-            
-            // 동적 비판 메시지 생성
-            let msg = "";
-            if (data.fwdPer > 20) {
-                msg = `미국 10년물 금리가 4.5% 수준인 고금리 환경에서 선행 PER ${data.fwdPer}배는 무위험 수익률 대비 주식의 기대 수익률(ERP)이 역사적 최저치임을 뜻합니다. 이는 실적 성장이 완벽하게 뒷받침되지 않을 경우 매우 취약한 구조입니다.`;
-            }
-            if (data.vkospi > 40 && data.credit > 30) {
-                msg += ` 특히 한국 시장은 신용잔고(${data.credit}조)와 변동성 지수(${data.vkospi})가 동반 폭등했습니다. 이는 레버리지를 이용한 투기적 쏠림이 극에 달했음을 시사하며, 작은 충격에도 강제 청산의 연쇄 반응이 일어날 리스크가 큽니다.`;
-            }
-
-            if (msg) {
-                intelSection.classList.remove('hidden');
-                intelMessage.innerText = msg;
+            if(text.trim() !== "") {
+                window.scrollTo({ top: document.getElementById('usIntel').offsetTop - 50, behavior: 'smooth' });
             }
         }
     </script>
